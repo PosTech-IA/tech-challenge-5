@@ -1,0 +1,31 @@
+[project]
+name = "processor"
+version = "0.1.0"
+description = "Processor — Celery worker, AI analysis pipeline"
+requires-python = ">=3.12"
+dependencies = [
+    "celery[redis]>=5.4.0",
+    "anthropic>=0.40.0",
+    "pillow>=10.0.0",
+    "pypdf>=4.0.0",
+    "minio>=7.2.0",
+    "sqlalchemy>=2.0.0",
+    "psycopg2-binary>=2.9.0",
+    "python-dotenv>=1.0.0",
+    "shared",
+]
+
+[tool.uv]
+package = true
+
+[tool.uv.sources]
+shared = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.0",
+    "ruff>=0.14.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

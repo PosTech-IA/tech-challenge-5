@@ -7,34 +7,51 @@ on:
     branches: [main]
 
 jobs:
-  test-api:
+  test-gateway:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || contains(github.event.pull_request.changed_files, 'services/gateway') || contains(github.event.pull_request.changed_files, 'shared') }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
-      - name: Lint and test API
-        working-directory: services/api
-        run: |
-          uv sync --group dev
-          uv run ruff check app/ tests/
-          uv run pytest tests/ -v
+      - run: uv sync --package gateway --group dev
+      - run: uv run ruff check services/gateway/app
+      - run: uv run pytest services/gateway/tests -v
 
-  test-worker:
+  test-upload:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || contains(github.event.pull_request.changed_files, 'services/upload') || contains(github.event.pull_request.changed_files, 'shared') }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v3
-      - name: Lint and test Worker
-        working-directory: services/worker
-        run: |
-          uv sync --group dev
-          uv run ruff check app/ tests/
-          uv run pytest tests/ -v
+      - run: uv sync --package upload --group dev
+      - run: uv run ruff check services/upload/app
+      - run: uv run pytest services/upload/tests -v
+
+  test-processor:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || contains(github.event.pull_request.changed_files, 'services/processor') || contains(github.event.pull_request.changed_files, 'shared') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --package processor --group dev
+      - run: uv run ruff check services/processor/app
+      - run: uv run pytest services/processor/tests -v
+
+  test-reports:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' || contains(github.event.pull_request.changed_files, 'services/reports') || contains(github.event.pull_request.changed_files, 'shared') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - run: uv sync --package reports --group dev
+      - run: uv run ruff check services/reports/app
+      - run: uv run pytest services/reports/tests -v
 
   build:
     runs-on: ubuntu-latest
-    needs: [test-api, test-worker]
+    needs: [test-gateway, test-upload, test-processor, test-reports]
+    if: always()
     steps:
       - uses: actions/checkout@v4
-      - name: Build Docker images
+      - name: Build all images
         run: docker compose build
