@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Lint and test API
+        working-directory: services/api
+        run: |
+          uv sync --group dev
+          uv run ruff check app/ tests/
+          uv run pytest tests/ -v
+
+  test-worker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Lint and test Worker
+        working-directory: services/worker
+        run: |
+          uv sync --group dev
+          uv run ruff check app/ tests/
+          uv run pytest tests/ -v
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [test-api, test-worker]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker images
+        run: docker compose build
