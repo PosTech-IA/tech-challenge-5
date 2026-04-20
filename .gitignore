@@ -1,0 +1,11 @@
+# uv / Python packaging
+**/*.egg-info/
+**/__pycache__/
+**/*.pyc
+.venv/
+
+# Env
+.env
+
+# Uploads locais
+uploads/
