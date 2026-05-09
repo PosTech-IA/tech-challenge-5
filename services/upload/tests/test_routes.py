@@ -1,14 +1,14 @@
 import io
 from unittest.mock import patch
 
-import app.database as db_module
+import shared.src.shared.database as db_module
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.database import Base, get_db
+from shared.src.shared.database import Base, get_db
 from app.main import app
 
 test_engine = create_engine(

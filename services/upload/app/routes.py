@@ -7,7 +7,7 @@ from app.celery_app import enqueue_processing
 from app.database import get_db
 from app.models import Analysis
 from app.storage import upload_file
-from shared.schemas import AnalysisSchema, AnalysisStatus
+from shared.src.shared.schemas import AnalysisSchema, AnalysisStatus
 
 router = APIRouter()
 

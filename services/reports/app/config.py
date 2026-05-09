@@ -1,7 +1,8 @@
 from shared.config import BaseConfig
 
 
-class UploadConfig(BaseConfig):
+class ProcessorConfig(BaseConfig):
+    # Use the same database as upload service for shared Analysis model
     database_url: str = "postgresql://app:app@postgres/app"
     minio_endpoint: str = "minio:9000"
     minio_access_key: str = "minioadmin"
@@ -9,4 +10,4 @@ class UploadConfig(BaseConfig):
     minio_bucket: str = "diagrams"
 
 
-settings = UploadConfig()
+settings = ProcessorConfig()
