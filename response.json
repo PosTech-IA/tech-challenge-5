@@ -1,7 +1,0 @@
-HTTP/1.1 202 Accepted
-date: Sat, 09 May 2026 01:46:55 GMT
-server: uvicorn
-content-length: 269
-content-type: application/json
-
-{"id":"584b78b6-d730-4c1d-b75c-931d581cb2e5","filename":"testfile.bin","file_ref":"uploads/584b78b6-d730-4c1d-b75c-931d581cb2e5/testfile.bin","status":"received","error_message":null,"created_at":"2026-05-09T01:46:40.264438Z","updated_at":"2026-05-09T01:46:40.264443Z"}

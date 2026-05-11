@@ -1,21 +1,95 @@
-from fastapi import FastAPI, Depends
+import json
+
+from contextlib import asynccontextmanager
+from collections.abc import AsyncGenerator
+
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
-from upload.app.database import get_db
-from upload.app.models import Analysis
 
-app = FastAPI(title="Reports Service")
+import shared.database as db
+from app.config import settings
+from shared.models import Analysis
 
+
+# -----------------------------
+# DB init
+# -----------------------------
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    db.init_db(settings)
+    db.Base.metadata.create_all(bind=db.engine)
+    yield
+
+
+app = FastAPI(title="Reports Service", lifespan=lifespan)
+
+
+# -----------------------------
+# Get report (JSON API)
+# -----------------------------
 @app.get("/reports/{analysis_id}")
-def generate_report(analysis_id: str, db: Session = Depends(get_db)):
-    analysis = db.query(Analysis).filter(Analysis.id == analysis_id).first()
-    
-    if not analysis or analysis.status != "analyzed":
-        return {"error": "Relatório ainda não disponível ou não encontrado."}
-    
-    # Lógica de formatação do relatório estruturado
+def get_report(
+    analysis_id: str,
+    db_session: Session = Depends(db.get_db),
+):
+
+    analysis = (
+        db_session.query(Analysis)
+        .filter(Analysis.id == analysis_id)
+        .first()
+    )
+
+    if not analysis:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    if analysis.status != "analyzed":
+        raise HTTPException(status_code=409, detail="Still processing")
+
     return {
         "analysis_id": analysis.id,
         "filename": analysis.filename,
-        "generated_at": analysis.updated_at,
-        "content": analysis.result_data # Dados vindos da IA
+        "status": analysis.status,
+        "content": analysis.result_data,
     }
+
+
+# -----------------------------
+# DOWNLOAD generated file (from DB)
+# -----------------------------
+@app.get("/reports/{analysis_id}/download")
+def download_report(
+    analysis_id: str,
+    db_session: Session = Depends(db.get_db),
+):
+
+    analysis = (
+        db_session.query(Analysis)
+        .filter(Analysis.id == analysis_id)
+        .first()
+    )
+
+    if not analysis:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    if analysis.status != "analyzed":
+        raise HTTPException(status_code=409, detail="Still processing")
+
+    if not analysis.result_data:
+        raise HTTPException(status_code=404, detail="No result data")
+
+    # garante dict
+    try:
+        data = json.loads(analysis.result_data) if isinstance(analysis.result_data, str) else analysis.result_data
+    except Exception:
+        data = {"raw": analysis.result_data}
+
+    content = json.dumps(data, ensure_ascii=False, indent=2)
+
+    return Response(
+        content=content,
+        media_type="application/json",
+        headers={
+            "Content-Disposition": f'attachment; filename="{analysis_id}-result.json"'
+        },
+    )

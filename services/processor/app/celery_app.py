@@ -1,7 +1,7 @@
-from celery import Celery
+from shared.celery import create_celery_app
 from app.config import settings
 
-celery = Celery(broker=settings.redis_url)
+celery = create_celery_app(settings)
 
 # Ensure database tables exist before tasks run
 # This creates all tables defined in app.models using SQLAlchemy
