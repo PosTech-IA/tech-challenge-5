@@ -4,13 +4,21 @@ from collections.abc import AsyncGenerator
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-import app.database as _db
+import shared.database as db
+from shared.storage import init_storage
+
 from app.routes import router
+from app.config import settings
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    _db.Base.metadata.create_all(bind=_db.engine)
+    # Initialize database and storage
+    db.init_db(settings)
+    init_storage(settings)
+
+    db.Base.metadata.create_all(bind=db.engine)
+
     yield
 
 
