@@ -10,5 +10,5 @@ COPY services/gateway/ services/gateway/
 RUN uv sync --package gateway --no-dev
 
 WORKDIR /app/services/gateway
-EXPOSE 8000
-CMD ["uv", "run", "--project", "/app", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 8080
+CMD ["uv", "run", "--project", "/app", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

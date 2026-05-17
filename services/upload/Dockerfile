@@ -10,5 +10,5 @@ COPY services/upload/ services/upload/
 RUN uv sync --package upload --no-dev
 ENV PYTHONPATH=/app/shared/src
 WORKDIR /app/services/upload
-EXPOSE 8001
-CMD ["uv", "run", "--project", "/app", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001"]
+EXPOSE 8080
+CMD ["uv", "run", "--project", "/app", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
