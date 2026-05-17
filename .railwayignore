@@ -1,0 +1,67 @@
+# .railwayignore - Exclude files from Railway deployment
+
+# Development files
+.git
+.gitignore
+.env.local
+.env.*.local
+*.pyc
+__pycache__
+.pytest_cache
+.mypy_cache
+*.egg-info
+dist
+build
+*.pyo
+
+# IDEs and editors
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+.editorconfig
+
+# Documentation
+*.md
+docs/
+
+# Local files
+.env
+.env.local
+uploads/
+*.log
+
+# Docker
+docker-compose.local.yml
+docker-compose.override.yml
+Dockerfile.dev
+
+# Node files
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Python virtual environments
+venv/
+env/
+.venv/
+
+# Makefile
+Makefile
+
+# CI/CD
+.github/
+
+# Local development
+*.sqlite
+*.db
+
+# Claude Code / AI related files
+.claude/
+.agents/
+claude.md
+.aider*
+aider*
+*.aiderignore

@@ -6,6 +6,10 @@ app = FastAPI(title="API Gateway")
 UPLOAD_SERVICE = "http://upload:8001"
 REPORTS_SERVICE = "http://reports:8002"
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "service": "gateway"}
+
 @app.post("/api/v1/upload")
 async def proxy_upload(request: Request):
     # Forward the incoming request body and headers to the upload service

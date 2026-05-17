@@ -26,6 +26,11 @@ app = FastAPI(title="Upload Service", lifespan=lifespan)
 app.include_router(router)
 
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok", "service": "upload"}
+
+
 @app.exception_handler(Exception)
 async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse(status_code=500, content={"detail": str(exc)})

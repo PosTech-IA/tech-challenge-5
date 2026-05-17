@@ -26,6 +26,14 @@ app = FastAPI(title="Reports Service", lifespan=lifespan)
 
 
 # -----------------------------
+# Health check
+# -----------------------------
+@app.get("/health")
+def health_check():
+    return {"status": "ok", "service": "reports"}
+
+
+# -----------------------------
 # Get report (JSON API)
 # -----------------------------
 @app.get("/reports/{analysis_id}")
