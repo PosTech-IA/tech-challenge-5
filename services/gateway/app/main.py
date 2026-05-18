@@ -28,19 +28,31 @@ async def proxy_upload(request: Request):
     logger.info(f"Received upload request for file")
 
     try:
-        # Copy headers, preserving multipart boundary information
-        headers = dict(request.headers)
-        headers.pop("host", None)
-        headers["X-Correlation-ID"] = correlation_id
+        # Parse incoming multipart form
+        form = await request.form()
+        file = form.get("file")
 
-        logger.info(f"Content-Type: {headers.get('content-type', 'not set')}")
+        if not file:
+            raise ValueError("No file provided in upload request")
+
+        logger.info(f"Parsed file from request: {file.filename}, Content-Type: {file.content_type}")
+
+        # Read file content
+        file_content = await file.read()
+        logger.info(f"File size: {len(file_content)} bytes")
+
+        # Prepare multipart data for httpx using files parameter
+        # This properly reconstructs the multipart request that upload service expects
+        files = {"file": (file.filename, file_content, file.content_type)}
+
+        # Only include correlation ID header when forwarding to upload service
+        headers = {"X-Correlation-ID": correlation_id}
 
         async with httpx.AsyncClient(timeout=30.0) as client:
             logger.info(f"Forwarding to upload service: {UPLOAD_SERVICE}/upload")
-            # Use request.stream() to preserve multipart encoding without buffering
             resp = await client.post(
                 f"{UPLOAD_SERVICE}/upload",
-                content=request.stream(),
+                files=files,
                 headers=headers
             )
             logger.info(f"Upload service responded with status {resp.status_code}")
