@@ -3,7 +3,7 @@ import os
 import re
 import unicodedata
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 from shared.logging import get_logger
 
@@ -41,7 +41,7 @@ def secure_filename(filename: str) -> str:
     status_code=status.HTTP_202_ACCEPTED,
 )
 async def upload_diagram(
-    file: UploadFile,
+    file: UploadFile = File(...),
     db: Session = Depends(get_db),
 ) -> AnalysisSchema:
 
