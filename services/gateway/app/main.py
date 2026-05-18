@@ -8,8 +8,9 @@ logger = get_logger(__name__)
 
 app = FastAPI(title="API Gateway")
 
-UPLOAD_SERVICE = "http://upload:8001"
-REPORTS_SERVICE = "http://reports:8002"
+# Internal service URLs (all use port 8080 in Railway)
+UPLOAD_SERVICE = "http://upload:8080"
+REPORTS_SERVICE = "http://reports:8080"
 
 @app.on_event("startup")
 async def startup():
