@@ -28,23 +28,19 @@ async def proxy_upload(request: Request):
     logger.info(f"Received upload request for file")
 
     try:
-        # Get the raw request body
-        body = await request.body()
-
-        # Copy all headers except host (httpx will set it)
+        # Copy headers, preserving multipart boundary information
         headers = dict(request.headers)
         headers.pop("host", None)
         headers["X-Correlation-ID"] = correlation_id
 
         logger.info(f"Content-Type: {headers.get('content-type', 'not set')}")
-        logger.info(f"Body size: {len(body)} bytes")
 
         async with httpx.AsyncClient(timeout=30.0) as client:
             logger.info(f"Forwarding to upload service: {UPLOAD_SERVICE}/upload")
-            # Forward raw body with all headers (httpx will handle the Content-Type)
+            # Use request.stream() to preserve multipart encoding without buffering
             resp = await client.post(
                 f"{UPLOAD_SERVICE}/upload",
-                content=body,
+                content=request.stream(),
                 headers=headers
             )
             logger.info(f"Upload service responded with status {resp.status_code}")
