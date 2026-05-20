@@ -22,36 +22,38 @@ async def health_check():
 
 @app.post("/api/v1/upload")
 async def proxy_upload(request: Request):
-    from starlette.datastructures import FormData
-
     correlation_id = request.headers.get("X-Correlation-ID", str(uuid.uuid4())[:8])
     set_correlation_id(correlation_id)
 
     logger.info(f"Received upload request for file")
 
     try:
-        # Parse the incoming multipart form data
+        # Parse incoming multipart form
         form = await request.form()
-
-        # Extract file from form
         file = form.get("file")
+
         if not file:
             raise ValueError("No file provided in upload request")
 
-        logger.info(f"Parsed file from request: {file.filename}")
+        logger.info(f"Parsed file from request: {file.filename}, Content-Type: {file.content_type}")
 
-        # Read the file content
+        # Read file content
         file_content = await file.read()
+        logger.info(f"File size: {len(file_content)} bytes")
 
         # Prepare multipart data for httpx using files parameter
+        # This properly reconstructs the multipart request that upload service expects
         files = {"file": (file.filename, file_content, file.content_type)}
+
+        # Only include correlation ID header when forwarding to upload service
+        headers = {"X-Correlation-ID": correlation_id}
 
         async with httpx.AsyncClient(timeout=30.0) as client:
             logger.info(f"Forwarding to upload service: {UPLOAD_SERVICE}/upload")
             resp = await client.post(
                 f"{UPLOAD_SERVICE}/upload",
                 files=files,
-                headers={"X-Correlation-ID": correlation_id}
+                headers=headers
             )
             logger.info(f"Upload service responded with status {resp.status_code}")
             return resp.json()
