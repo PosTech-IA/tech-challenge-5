@@ -1,12 +1,25 @@
 import httpx
 from fastapi import FastAPI, Request, Query
+from fastapi.middleware.cors import CORSMiddleware
 from shared.logging import setup_logging, get_logger, get_correlation_id, set_correlation_id
+from app.config import settings
 import uuid
 
 setup_logging('gateway')
 logger = get_logger(__name__)
 
 app = FastAPI(title="API Gateway")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins_list,
+    allow_credentials=settings.cors_allow_credentials,
+    allow_methods=settings.cors_allow_methods,
+    allow_headers=settings.cors_allow_headers,
+    expose_headers=settings.cors_expose_headers,
+    max_age=settings.cors_max_age,
+)
 
 # Internal service URLs (all use port 8080 in Railway)
 UPLOAD_SERVICE = "http://upload:8080"
