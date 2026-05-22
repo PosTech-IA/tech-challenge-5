@@ -1,16 +1,15 @@
 import io
 from unittest.mock import patch
-
-import shared.src.shared.database as db_module
-import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
 from sqlalchemy.pool import StaticPool
 
-from shared.src.shared.database import Base, get_db
-from app.main import app
+import pytest
+from fastapi.testclient import TestClient
 
+from shared.database import get_db
+
+# Use test database from conftest
 test_engine = create_engine(
     "sqlite:///:memory:",
     connect_args={"check_same_thread": False},
@@ -27,16 +26,9 @@ def override_get_db():
         db.close()
 
 
-@pytest.fixture(autouse=True)
-def setup_db():
-    db_module.engine = test_engine
-    Base.metadata.create_all(bind=test_engine)
-    yield
-    Base.metadata.drop_all(bind=test_engine)
-
-
 @pytest.fixture()
 def client():
+    from app.main import app
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as c:
         yield c

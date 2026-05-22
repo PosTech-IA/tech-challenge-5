@@ -64,6 +64,17 @@ def download_file(file_ref: str, config: BaseConfig) -> bytes:
         raise
 
 
+def file_exists(file_ref: str, config: BaseConfig) -> bool:
+    """Check if file exists in Minio."""
+    _ensure_bucket(config)
+    client = _get_client()
+    try:
+        client.stat_object(config.minio_bucket, file_ref)
+        return True
+    except S3Error:
+        return False
+
+
 def encode_image(file_bytes: bytes) -> str:
     """Return base64-encoded string of bytes suitable for embedding in requests."""
     return base64.b64encode(file_bytes).decode("ascii")
