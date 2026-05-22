@@ -44,3 +44,10 @@ class ReportSchema(BaseModel):
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class ListReportsResponse(BaseModel):
+    items: list[AnalysisSchema]
+    total: int
+    limit: int
+    offset: int
