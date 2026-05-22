@@ -3,13 +3,14 @@ import json
 from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Query
 from fastapi.responses import Response
 from sqlalchemy.orm import Session
 
 import shared.database as db
 from app.config import settings
 from shared.models import Analysis
+from shared.schemas import AnalysisSchema, ListReportsResponse
 
 
 # -----------------------------
@@ -34,8 +35,39 @@ def health_check():
 
 
 # -----------------------------
-# Get report (JSON API)
+# List reports with filters and pagination
 # -----------------------------
+@app.get("/reports")
+def list_reports(
+    status: str | None = Query(None),
+    limit: int = Query(10, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    db_session: Session = Depends(db.get_db),
+):
+    query = db_session.query(Analysis)
+
+    if status:
+        query = query.filter(Analysis.status == status)
+
+    total = query.count()
+    results = (
+        query.order_by(Analysis.created_at.desc())
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+    items = [AnalysisSchema.model_validate(r) for r in results]
+
+    return ListReportsResponse(
+        items=items,
+        total=total,
+        limit=limit,
+        offset=offset,
+    )
+
+
+# Get report (JSON API)
 @app.get("/reports/{analysis_id}")
 def get_report(
     analysis_id: str,

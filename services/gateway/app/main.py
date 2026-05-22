@@ -1,5 +1,5 @@
 import httpx
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Query
 from shared.logging import setup_logging, get_logger, get_correlation_id, set_correlation_id
 import uuid
 
@@ -59,6 +59,33 @@ async def proxy_upload(request: Request):
             return resp.json()
     except Exception as e:
         logger.error(f"Error calling upload service: {str(e)}", exc_info=True)
+        raise
+
+@app.get("/api/v1/reports")
+async def proxy_list_reports(
+    status: str | None = Query(None),
+    limit: int = Query(10, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+):
+    correlation_id = get_correlation_id()
+    logger.info(f"Listing reports with status={status}, limit={limit}, offset={offset}")
+
+    try:
+        params = {"limit": limit, "offset": offset}
+        if status:
+            params["status"] = status
+
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            logger.info(f"Forwarding to reports service: {REPORTS_SERVICE}/reports")
+            resp = await client.get(
+                f"{REPORTS_SERVICE}/reports",
+                params=params,
+                headers={"X-Correlation-ID": correlation_id}
+            )
+            logger.info(f"Reports service responded with status {resp.status_code}")
+            return resp.json()
+    except Exception as e:
+        logger.error(f"Error calling reports service: {str(e)}", exc_info=True)
         raise
 
 @app.get("/api/v1/report/{analysis_id}")
