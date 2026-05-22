@@ -333,6 +333,7 @@ dependencies = [
     { name = "httpx" },
     { name = "pyjwt" },
     { name = "python-dotenv" },
+    { name = "python-multipart" },
     { name = "shared" },
     { name = "slowapi" },
     { name = "uvicorn" },
@@ -352,6 +353,7 @@ requires-dist = [
     { name = "httpx", specifier = ">=0.27.0" },
     { name = "pyjwt", specifier = ">=2.8.0" },
     { name = "python-dotenv", specifier = ">=1.0.0" },
+    { name = "python-multipart", specifier = ">=0.0.6" },
     { name = "shared", editable = "shared" },
     { name = "slowapi", specifier = ">=0.1.9" },
     { name = "uvicorn", specifier = ">=0.40.0" },
@@ -1071,14 +1073,18 @@ name = "shared"
 version = "0.1.0"
 source = { editable = "shared" }
 dependencies = [
+    { name = "minio" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
+    { name = "sqlalchemy" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "minio", specifier = ">=7.2.0" },
     { name = "pydantic", specifier = ">=2.12.0" },
     { name = "pydantic-settings", specifier = ">=2.0.0" },
+    { name = "sqlalchemy", specifier = ">=2.0.0" },
 ]
 
 [[package]]

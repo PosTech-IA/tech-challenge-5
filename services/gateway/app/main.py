@@ -1,6 +1,7 @@
 import httpx
 from fastapi import FastAPI, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from shared.logging import setup_logging, get_logger, get_correlation_id, set_correlation_id
 from app.config import settings
 import uuid
@@ -115,6 +116,29 @@ async def proxy_report(analysis_id: str):
             )
             logger.info(f"Reports service responded with status {resp.status_code}")
             return resp.json()
+    except Exception as e:
+        logger.error(f"Error calling reports service: {str(e)}", exc_info=True)
+        raise
+
+@app.get("/api/v1/report/{analysis_id}/pdf")
+async def proxy_report_pdf(analysis_id: str):
+    correlation_id = get_correlation_id()
+    logger.info(f"Downloading PDF report for analysis: {analysis_id}")
+
+    try:
+        async with httpx.AsyncClient(timeout=60.0) as client:
+            logger.info(f"Forwarding to reports service: {REPORTS_SERVICE}/reports/{analysis_id}/pdf")
+            resp = await client.get(
+                f"{REPORTS_SERVICE}/reports/{analysis_id}/pdf",
+                headers={"X-Correlation-ID": correlation_id}
+            )
+            logger.info(f"Reports service responded with status {resp.status_code}")
+
+            return StreamingResponse(
+                iter([resp.content]),
+                media_type="application/pdf",
+                headers={"Content-Disposition": 'attachment; filename="report.pdf"'}
+            )
     except Exception as e:
         logger.error(f"Error calling reports service: {str(e)}", exc_info=True)
         raise
